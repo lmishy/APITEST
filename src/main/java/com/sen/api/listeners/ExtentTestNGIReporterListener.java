@@ -45,6 +45,7 @@ public class ExtentTestNGIReporterListener implements IReporter {
             //存在多个suite的情况下，在报告中将同一个一个suite的测试结果归为一类，创建一级节点。
             if(createSuiteNode){
                 suiteTest = extent.createTest(suite.getName()).assignCategory(suite.getName());
+                System.out.println("参数"+suiteTest);
             }
             boolean createSuiteResultNode = false;
             if(result.size()>1){

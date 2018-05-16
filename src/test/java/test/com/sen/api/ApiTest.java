@@ -1,6 +1,8 @@
 package test.com.sen.api;
 
 import com.alibaba.fastjson.JSON;
+import com.sen.api.utils.*;
+
 import com.sen.api.beans.ApiDataBean;
 import com.sen.api.configs.ApiConfig;
 import com.sen.api.excepions.ErrorRespStatusException;
@@ -28,9 +30,12 @@ import org.testng.annotations.Optional;
 import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
+
+import javax.naming.spi.DirStateFactory.Result;
 
 @Listeners({ AutoTestListener.class, RetryListener.class })
 public class ApiTest extends TestBase {
@@ -43,7 +48,7 @@ public class ApiTest extends TestBase {
 	/**
 	 * 跟路径是否以‘/’结尾
 	 */
-	private static boolean rooUrlEndWithSlash = false;
+	private static boolean rooUrlEndWithSlash = true;
 
 	/**
 	 * 所有公共header，会在发送请求的时候添加到http header上
@@ -81,10 +86,12 @@ public class ApiTest extends TestBase {
 		// 获取基础数据
 		rootUrl = apiConfig.getRootUrl();
 		rooUrlEndWithSlash = rootUrl.endsWith("/");
-
+		//System.out.println("z总的"+rooUrlEndWithSlash);
 		// 读取 param，并将值保存到公共数据map
 		Map<String, String> params = apiConfig.getParams();
 		setSaveDates(params);
+		//System.out.println(params);
+		
 
 		List<Header> headers = new ArrayList<Header>();
 		apiConfig.getHeaders().forEach((key, value) -> {
@@ -93,12 +100,15 @@ public class ApiTest extends TestBase {
 				requestByFormData=true;
 			}
 			headers.add(header);
+			//System.out.println(headers);
 		});
 		publicHeaders = headers.toArray(new Header[headers.size()]);
+		//System.out.println("publicHeaders  is  "+publicHeaders);
 		client = new SSLClient();
 		client.getParams().setParameter(
 				CoreConnectionPNames.CONNECTION_TIMEOUT, 60000); // 请求超时
 		client.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 60000); // 读取超时
+	    
 	}
 
 	@Parameters({ "excelPath", "sheetName" })
@@ -143,6 +153,7 @@ public class ApiTest extends TestBase {
 		try {
 			// 执行
 			HttpResponse response = client.execute(method);
+			//System.out.println("返回结果是"+response);
 			int responseStatus = response.getStatusLine().getStatusCode();
 			ReportUtil.log("返回状态码："+responseStatus);
 			if (apiDataBean.getStatus()!= 0) {
@@ -201,20 +212,17 @@ public class ApiTest extends TestBase {
 		return apiParam;
 	}
 
+	
 	/**
-	 * 封装请求方法
-	 *
 	 * @param url
-	 *            请求路径
 	 * @param method
-	 *            请求方法
 	 * @param param
-	 *            请求参数
-	 * @return 请求方法
+	 * @return
 	 * @throws UnsupportedEncodingException
 	 */
 	private HttpUriRequest parseHttpRequest(String url, String method, String param) throws UnsupportedEncodingException {
 		// 处理url
+		//String charset = "";
 		url = parseUrl(url);
 		ReportUtil.log("method:" + method);
 		ReportUtil.log("url:" + url);
@@ -242,9 +250,11 @@ public class ApiTest extends TestBase {
 			return deleteMethod;
 		} else {
 			// 封装get方法
+
 			HttpGet getMethod = new HttpGet(url);
 			getMethod.setHeaders(publicHeaders);
 			return getMethod;
+		
 		}
 	}
 
@@ -294,6 +304,7 @@ public class ApiTest extends TestBase {
 			}
 			return multiEntity;
 		}else{
+			//String encoder = URLEncoder.encode(param);
 			return new StringEntity(param, "UTF-8");
 		}
 	}
