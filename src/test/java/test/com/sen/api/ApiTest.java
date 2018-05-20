@@ -5,19 +5,23 @@ import com.sen.api.utils.*;
 
 import com.sen.api.beans.ApiDataBean;
 import com.sen.api.configs.ApiConfig;
-import com.sen.api.excepions.ErrorRespStatusException;
+//import com.sen.api.excepions.ErrorRespStatusException;
 import com.sen.api.listeners.AutoTestListener;
 import com.sen.api.listeners.RetryListener;
-import com.sen.api.utils.*;
+//import com.sen.api.utils.*;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.*;
+import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.util.EntityUtils;
@@ -30,12 +34,12 @@ import org.testng.annotations.Optional;
 import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+//import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 
-import javax.naming.spi.DirStateFactory.Result;
+//import javax.naming.spi.DirStateFactory.Result;
 
 @Listeners({ AutoTestListener.class, RetryListener.class })
 public class ApiTest extends TestBase {
@@ -150,6 +154,8 @@ public class ApiTest extends TestBase {
 		HttpUriRequest method = parseHttpRequest(apiDataBean.getUrl(),
 				apiDataBean.getMethod(), apiParam);
 		String responseData;
+		ClientConnectionManager connManager = new PoolingClientConnectionManager();
+		DefaultHttpClient client = new DefaultHttpClient(connManager);
 		try {
 			// 执行
 			HttpResponse response = client.execute(method);
@@ -289,8 +295,7 @@ public class ApiTest extends TestBase {
 	 */
 	private HttpEntity parseEntity(String param,boolean formData) throws UnsupportedEncodingException{
 		if(formData){
-			Map<String, String> paramMap = JSON.parseObject(param,
-					HashMap.class);
+			Map<String, String> paramMap = JSON.parseObject(param,HashMap.class);
 			MultipartEntity multiEntity = new MultipartEntity();
 			for (String key : paramMap.keySet()) {
 				String value = paramMap.get(key);
